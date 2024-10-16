@@ -1,0 +1,65 @@
+[
+    {
+    "id": "1",
+    "title": "Smartphone XYZ",
+    "description": "Smartphone con pantalla AMOLED.",
+    "code": "SP123",
+    "price": 699.99,
+    "status": true,
+    "stock": 150,
+    "category": "Electrónica",
+    "thumbnails": [
+        "https://example.com/images/smartphone_xyz_1.jpg"
+    ]
+    },
+    {
+    "id": "2",
+    "title": "Laptop ABC",
+    "description": "Laptop ultradelgada con procesador i7.",
+    "code": "LP456",
+    "price": 1299.99,
+    "status": true,
+    "stock": 75,
+    "category": "Computadoras",
+    "thumbnails": [
+        "https://example.com/images/laptop_abc_1.jpg"
+    ]
+    },
+    {
+    "id": "3",
+    "title": "Auriculares Inalámbricos DEF",
+    "description": "Auriculares con cancelación de ruido, batería de larga duración y conectividad Bluetooth.",
+    "code": "AU789",
+    "price": 199.99,
+    "status": true,
+    "stock": 200,
+    "category": "Accesorios",
+    "thumbnails": []
+    },
+    {
+    "id": "4",
+    "title": "Cámara Digital GHI",
+    "description": "Cámara digital réflex con lente intercambiable, ideal para fotografía profesional.",
+    "code": "CA012",
+    "price": 899.99,
+    "status": true,
+    "stock": 30,
+    "category": "Fotografía",
+    "thumbnails": [
+        "https://example.com/images/camera_ghi_1.jpg"
+    ]
+    },
+    {
+    "id": "5",
+    "title": "Reloj Inteligente JKL",
+    "description": "Reloj inteligente con monitor de salud, GPS y notificaciones de smartphone.",
+    "code": "RW345",
+    "price": 249.99,
+    "status": true,
+    "stock": 120,
+    "category": "Wearables",
+    "thumbnails": [
+        "https://example.com/images/watch_jkl_1.jpg"
+    ]
+    }
+]
