@@ -21,11 +21,10 @@
     <script>
         const socket = io();
 
-        // Escuchar el evento para actualizar la lista de productos
+        
         socket.on('updateProducts', (products) => {
             const productList = document.getElementById('real-time-product-list');
-            productList.innerHTML = ''; // Limpiar la lista actual
-
+            productList.innerHTML = ''; 
             products.forEach(product => {
                 const li = document.createElement('li');
                 li.textContent = `${product.title} - $${product.price}`;
@@ -33,7 +32,7 @@
             });
         });
 
-        // Manejar el envío del formulario para agregar un producto
+        
         document.getElementById('product-form').addEventListener('submit', (e) => {
             e.preventDefault();
             const newProduct = {
@@ -43,8 +42,8 @@
                 price: parseFloat(document.getElementById('price').value),
                 stock: parseInt(document.getElementById('stock').value)
             };
-            socket.emit('addProduct', newProduct); // Emitir el evento para agregar producto
-            e.target.reset(); // Limpiar el formulario
+            socket.emit('addProduct', newProduct); 
+            e.target.reset(); 
         });
     </script>
 </body>
