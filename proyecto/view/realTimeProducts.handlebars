@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Productos en Tiempo Real</title>
+    <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+    <h1>Productos en Tiempo Real</h1>
+    <ul id="real-time-product-list"></ul>
+
+    <form id="product-form">
+        <input type="text" id="title" placeholder="Título" required />
+        <input type="text" id="description" placeholder="Descripción" required />
+        <input type="text" id="code" placeholder="Código" required />
+        <input type="number" id="price" placeholder="Precio" required />
+        <input type="number" id="stock" placeholder="Stock" required />
+        <button type="submit">Agregar Producto</button>
+    </form>
+
+    <script>
+        const socket = io();
+
+        // Escuchar el evento para actualizar la lista de productos
+        socket.on('updateProducts', (products) => {
+            const productList = document.getElementById('real-time-product-list');
+            productList.innerHTML = ''; // Limpiar la lista actual
+
+            products.forEach(product => {
+                const li = document.createElement('li');
+                li.textContent = `${product.title} - $${product.price}`;
+                productList.appendChild(li);
+            });
+        });
+
+        // Manejar el envío del formulario para agregar un producto
+        document.getElementById('product-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const newProduct = {
+                title: document.getElementById('title').value,
+                description: document.getElementById('description').value,
+                code: document.getElementById('code').value,
+                price: parseFloat(document.getElementById('price').value),
+                stock: parseInt(document.getElementById('stock').value)
+            };
+            socket.emit('addProduct', newProduct); // Emitir el evento para agregar producto
+            e.target.reset(); // Limpiar el formulario
+        });
+    </script>
+</body>
+</html>
