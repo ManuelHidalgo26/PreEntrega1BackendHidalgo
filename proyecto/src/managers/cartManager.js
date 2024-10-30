@@ -1,5 +1,7 @@
 const fs = require('fs');
-const cartsFilePath = './data/carts.json';
+const path = require('path'); 
+
+const productsFilePath = path.join(__dirname, '..', 'data', 'products.json'); 
 
 function readCarts() {
     const data = fs.readFileSync(cartsFilePath);

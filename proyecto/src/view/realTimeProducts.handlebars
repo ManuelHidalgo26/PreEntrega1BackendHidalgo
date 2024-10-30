@@ -2,8 +2,27 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Productos en Tiempo Real</title>
     <script src="/socket.io/socket.io.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        #product-form {
+            margin-bottom: 20px;
+        }
+        #real-time-product-list {
+            list-style-type: none;
+            padding: 0;
+        }
+        #real-time-product-list li {
+            margin: 5px 0;
+            padding: 10px;
+            border: 1px solid #ccc;
+        }
+    </style>
 </head>
 <body>
     <h1>Productos en Tiempo Real</h1>
@@ -21,10 +40,10 @@
     <script>
         const socket = io();
 
-        
         socket.on('updateProducts', (products) => {
             const productList = document.getElementById('real-time-product-list');
             productList.innerHTML = ''; 
+
             products.forEach(product => {
                 const li = document.createElement('li');
                 li.textContent = `${product.title} - $${product.price}`;
@@ -32,7 +51,6 @@
             });
         });
 
-        
         document.getElementById('product-form').addEventListener('submit', (e) => {
             e.preventDefault();
             const newProduct = {
@@ -42,7 +60,7 @@
                 price: parseFloat(document.getElementById('price').value),
                 stock: parseInt(document.getElementById('stock').value)
             };
-            socket.emit('addProduct', newProduct); 
+            socket.emit('addProduct', newProduct);
             e.target.reset(); 
         });
     </script>

@@ -1,6 +1,5 @@
 [
-    {
-    "id": "1",
+  {
     "title": "Smartphone XYZ",
     "description": "Smartphone con pantalla AMOLED.",
     "code": "SP123",
@@ -9,11 +8,11 @@
     "stock": 150,
     "category": "Electrónica",
     "thumbnails": [
-        "https://example.com/images/smartphone_xyz_1.jpg"
-    ]
-    },
-    {
-    "id": "2",
+      "https://example.com/images/smartphone_xyz_1.jpg"
+    ],
+    "id": "1"
+  },
+  {
     "title": "Laptop ABC",
     "description": "Laptop ultradelgada con procesador i7.",
     "code": "LP456",
@@ -22,11 +21,11 @@
     "stock": 75,
     "category": "Computadoras",
     "thumbnails": [
-        "https://example.com/images/laptop_abc_1.jpg"
-    ]
-    },
-    {
-    "id": "3",
+      "https://example.com/images/laptop_abc_1.jpg"
+    ],
+    "id": "2"
+  },
+  {
     "title": "Auriculares Inalámbricos DEF",
     "description": "Auriculares con cancelación de ruido, batería de larga duración y conectividad Bluetooth.",
     "code": "AU789",
@@ -34,10 +33,10 @@
     "status": true,
     "stock": 200,
     "category": "Accesorios",
-    "thumbnails": []
-    },
-    {
-    "id": "4",
+    "thumbnails": [],
+    "id": "3"
+  },
+  {
     "title": "Cámara Digital GHI",
     "description": "Cámara digital réflex con lente intercambiable, ideal para fotografía profesional.",
     "code": "CA012",
@@ -46,11 +45,11 @@
     "stock": 30,
     "category": "Fotografía",
     "thumbnails": [
-        "https://example.com/images/camera_ghi_1.jpg"
-    ]
-    },
-    {
-    "id": "5",
+      "https://example.com/images/camera_ghi_1.jpg"
+    ],
+    "id": "4"
+  },
+  {
     "title": "Reloj Inteligente JKL",
     "description": "Reloj inteligente con monitor de salud, GPS y notificaciones de smartphone.",
     "code": "RW345",
@@ -59,7 +58,8 @@
     "stock": 120,
     "category": "Wearables",
     "thumbnails": [
-        "https://example.com/images/watch_jkl_1.jpg"
-    ]
-    }
+      "https://example.com/images/watch_jkl_1.jpg"
+    ],
+    "id": "5"
+  }
 ]
