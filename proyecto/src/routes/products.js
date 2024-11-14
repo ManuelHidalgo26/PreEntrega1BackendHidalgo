@@ -1,26 +1,43 @@
+
 const express = require('express');
 const router = express.Router();
 const { getAllProducts, getProductById, addProduct, updateProduct, deleteProduct } = require('../managers/productManagers');
+const Product = require('../../models/product');
 
 module.exports = (io) => {
-    router.get('/', (req, res) => {
-        const limit = parseInt(req.query.limit) || undefined;
-        const products = getAllProducts(limit);
-        res.json(products);
-    });
-
-    router.get('/:pid', (req, res) => {
-        const pid = req.params.pid;
-        const product = getProductById(pid);
+    router.get('/:pid', async (req, res) => {
+        const pid = req.params.pid; 
         
-        if (product) {
-            res.json(product);
-        } else {
-            res.status(404).send('Producto no encontrado.');
+        try {
+            const product = await getProductById(pid); 
+            
+            if (!product) {
+                return res.status(404).send('Producto no encontrado.');
+            }
+            
+            res.json(product); 
+        } catch (error) {
+            console.error("Error al obtener el producto:", error);
+            res.status(500).send('Error al obtener el producto.');
         }
     });
 
-    router.post('/', (req, res) => {
+    router.get('/', async (req, res) => {
+        const limit = parseInt(req.query.limit) || 10;
+        const page = parseInt(req.query.page) || 1;
+    
+        let products = await getAllProducts(limit, page); 
+    
+        res.json({
+            status: 'success',
+            payload: products,
+            totalPages: Math.ceil(await Product.countDocuments() / limit), 
+            currentPage: page,
+        });
+    });
+    
+
+    router.post('/', async (req, res) => {
         const { title, description, code, price, stock, category, thumbnails } = req.body;
 
         if (!title || !description || !code || !price || !stock || !category) {
@@ -32,36 +49,35 @@ module.exports = (io) => {
             description, 
             code, 
             price: parseFloat(price), 
-            status: true, 
             stock: Number(stock), 
             category, 
             thumbnails: thumbnails || [] 
         };
 
-        const addedProduct = addProduct(newProduct);
+        const addedProduct = await addProduct(newProduct);
 
         
-        io.emit('updateProducts', getAllProducts()); 
+        io.emit('updateProducts', await getAllProducts()); 
 
         return res.status(201).json(addedProduct);
     });
 
-    router.put('/:pid', (req, res) => {
+    router.put('/:pid', async (req, res) => {
         const productId = req.params.pid;
 
         try {
-            const updatedProduct = updateProduct(productId, req.body);
+            const updatedProduct = await updateProduct(productId, req.body);
             res.json(updatedProduct);
         } catch (error) {
             res.status(404).send(error.message);
         }
     });
 
-    router.delete('/:pid', (req, res) => {
+    router.delete('/:pid', async (req, res) => {
         try {
-            deleteProduct(req.params.pid);
+            await deleteProduct(req.params.pid);
             
-            io.emit('updateProducts', getAllProducts()); 
+            io.emit('updateProducts', await getAllProducts()); 
             
             res.status(204).send();
         } catch (error) {

@@ -1,57 +1,31 @@
-const fs = require('fs');
-const path = require('path'); 
 
-const productsFilePath = path.join(__dirname, '..', 'data', 'products.json'); 
+const Product = require('../../models/product');
 
-function readProducts() {
-    const data = fs.readFileSync(productsFilePath);
-    return JSON.parse(data);
-}
-
-function writeProducts(products) {
-    fs.writeFileSync(productsFilePath, JSON.stringify(products, null, 2));
-}
-
-function getAllProducts(limit) {
-    const products = readProducts();
-    return limit ? products.slice(0, limit) : products;
-}
-
-function getProductById(pid) {
-    const products = readProducts();
-    return products.find(p => p.id === pid);
-}
-
-function addProduct(newProduct) {
-    const currentProducts = readProducts();
-    const newProductId = (currentProducts.length + 1).toString();
-    newProduct.id = newProductId;
-    currentProducts.push(newProduct);
-    writeProducts(currentProducts);
-    return newProduct;
-}
-
-function updateProduct(pid, updatedData) {
-    let existingProducts = readProducts();
-    let productIndex = existingProducts.findIndex(p => p.id === pid);
-
-    if (productIndex === -1) {
-        throw new Error('Producto no encontrado.');
+async function getAllProducts(limit, page) {
+    try {
+        return await Product.find().limit(limit).skip((page - 1) * limit).exec();
+    } catch (error) {
+        console.error("Error al obtener productos:", error);
+        throw error;
     }
-
-    const updatedProduct = { ...existingProducts[productIndex], ...updatedData };
-    existingProducts[productIndex] = updatedProduct;
-    writeProducts(existingProducts);
-    
-    return updatedProduct;
 }
 
-function deleteProduct(pid) {
-    let existingProducts = readProducts();
-    
-    existingProducts = existingProducts.filter(p => p.id !== pid);
-    
-    writeProducts(existingProducts);
+
+async function getProductById(pid) {
+    return await Product.findById(pid).exec();
+}
+
+async function addProduct(newProduct) {
+    const product = new Product(newProduct);
+    return await product.save();
+}
+
+async function updateProduct(pid, updatedData) {
+    return await Product.findByIdAndUpdate(pid, updatedData, { new: true }).exec();
+}
+
+async function deleteProduct(pid) {
+    return await Product.findByIdAndDelete(pid).exec();
 }
 
 module.exports = {

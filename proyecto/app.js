@@ -2,15 +2,35 @@ const express = require('express');
 const path = require('path');
 const { Server } = require('socket.io');
 const http = require('http');
-const { engine } = require('express-handlebars'); 
-const fs = require('fs');
+const { engine } = require('express-handlebars');
+const connectDB = require('./config/db'); 
+const { allowInsecurePrototypeAccess } = require('@handlebars/allow-prototype-access'); 
+const Handlebars = require('handlebars'); 
+const session = require('express-session'); 
+const { v4: uuidv4 } = require('uuid'); 
+const { getAllProducts } = require('./src/managers/productManagers'); 
+const Cart = require('./models/cart'); 
+
 
 const app = express();
 const port = 8080;
 
-app.engine('handlebars', engine()); 
+connectDB();
+
+app.engine('handlebars', engine({
+    handlebars: allowInsecurePrototypeAccess(Handlebars) 
+}));
 app.set('view engine', 'handlebars');
 app.set('views', path.join(__dirname, 'src', 'view'));
+
+
+
+app.use(session({
+    secret: 'tu_secreto_aqui',
+    resave: false,
+    saveUninitialized: true,
+    cookie: { secure: false }
+}));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -27,73 +47,65 @@ app.use('/api/carts', cartsRouter);
 
 io.on('connection', (socket) => {
     console.log('Nuevo cliente conectado');
-    socket.emit('updateProducts', readProducts());
 
-    socket.on('addProduct', (newProduct) => {
-        addProduct(newProduct); 
-        io.emit('updateProducts', readProducts());
+    socket.on('addProduct', async (newProduct) => {
+        try {
+            const addedProduct = await addProduct(newProduct); 
+            const products = await getAllProducts(); 
+            io.emit('updateProducts', products);
+            socket.emit('productAdded', { product: addedProduct });
+        } catch (error) {
+            console.error("Error al agregar producto:", error);
+            socket.emit('error', 'No se pudo agregar el producto.');
+        }
     });
-
+    
     socket.on('disconnect', () => {
         console.log('Cliente desconectado');
     });
 });
 
-app.get('/', (req, res) => {
-    const products = readProducts(); 
+app.get('/', async (req, res) => {
     try {
-        res.render('home', { products });
+        let cartId = req.session.cartId;
+        if (!cartId) {
+            const newCartId = uuidv4();
+            const newCart = new Cart({ _id: newCartId, products: [] });
+            await newCart.save();
+            req.session.cartId = newCart._id; 
+            cartId = newCart._id; 
+        }
+
+        console.log("ID del carrito:", req.session.cartId); 
+
+        const products = await getAllProducts(); 
+        res.render('home', { products, cartId }); 
     } catch (error) {
         console.error("Error al renderizar la vista:", error);
         res.status(500).send('Error al renderizar la vista');
     }
 });
 
-app.get('/realtimeproducts', (req, res) => {
+app.get('/cart', async (req, res) => {
     try {
-        res.render('realTimeProducts'); 
-    } catch (error) {
-        console.error("Error al renderizar la vista:", error);
-        res.status(500).send('Error al renderizar la vista');
-    }
-});
+        const cartId = req.session.cartId; 
+        if (!cartId) {
+            return res.redirect('/'); 
+        }
 
-app.use((err, req, res, next) => {
-    console.error(err.stack);
-    res.status(500).send('Algo salió mal!');
+        const cart = await Cart.findById(cartId).populate('products.productId').exec(); 
+        if (!cart) {
+            return res.status(404).send('Carrito no encontrado');
+        }
+
+        console.log("Contenido del carrito:", cart); 
+        res.render('cart', { cart }); 
+    } catch (error) {
+        console.error("Error al renderizar el carrito:", error);
+        res.status(500).send('Error al renderizar el carrito');
+    }
 });
 
 server.listen(port, () => {
     console.log(`Servidor corriendo en http://localhost:${port}`);
 });
-
-function readProducts() {
-    const productsFilePath = path.join(__dirname, 'src', 'data', 'products.json'); 
-
-    if (!fs.existsSync(productsFilePath)) {
-        console.error('El archivo products.json no existe en la ruta esperada:', productsFilePath);
-        return [];
-    }
-
-    try {
-        const data = fs.readFileSync(productsFilePath); 
-        return JSON.parse(data);
-    } catch (error) {
-        console.error("Error al leer productos:", error);
-        return [];
-    }
-}
-
-function addProduct(newProduct) {
-    try {
-        const currentProducts = readProducts();
-        const newProductId = (currentProducts.length + 1).toString();
-        newProduct.id = newProductId;
-        currentProducts.push(newProduct);
-        fs.writeFileSync(path.join(__dirname, 'src','data', 'products.json'), JSON.stringify(currentProducts, null, 2)); 
-        return newProduct;
-    } catch (error) {
-        console.error("Error al agregar producto:", error);
-        throw new Error("No se pudo agregar el producto.");
-    }
-}

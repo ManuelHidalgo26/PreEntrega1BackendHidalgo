@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carrito de Compras</title>
+</head>
+<body>
+<h1>Carrito de Compras</h1>
+
+<ul id="cart-list">
+{{#each cart.products}}
+    <li>
+        {{this.productId.title}} - ${{this.productId.price}} (Cantidad: {{this.quantity}})
+        <button onclick="removeFromCart('{{../_id}}', '{{this.productId._id}}')">Eliminar del Carrito</button> 
+    </li>
+{{else}}
+    <li>No hay productos en el carrito.</li>
+{{/each}}
+</ul>
+
+<script>
+function removeFromCart(cartId, productId) { 
+    console.log(`Intentando eliminar producto con cartId: ${cartId} y productId: ${productId}`); 
+
+    if (!cartId || !productId) {
+        alert("Error: El ID del carrito o del producto no está definido.");
+        return;
+    }
+
+    const url = `/api/carts/${cartId}/product/${productId}`;
+    console.log(`URL: ${url}`); 
+
+    fetch(url, { method: 'DELETE' }) 
+        .then(response => {
+            if (!response.ok) {
+                return response.text().then(text => { throw new Error(text); });
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                alert("Producto eliminado del carrito");
+                window.location.reload();
+            } else {
+                alert("Error: No se pudo eliminar el producto.");
+            }
+        })
+        .catch(error => alert("Error al eliminar el producto: " + error.message));
+}
+</script>
+
+<a href="/">Volver a la tienda</a>
+
+</body>
+</html>

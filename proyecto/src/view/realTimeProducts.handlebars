@@ -52,7 +52,7 @@
         });
 
         document.getElementById('product-form').addEventListener('submit', (e) => {
-            e.preventDefault();
+            e.preventDefault(); 
             const newProduct = {
                 title: document.getElementById('title').value,
                 description: document.getElementById('description').value,
@@ -60,7 +60,7 @@
                 price: parseFloat(document.getElementById('price').value),
                 stock: parseInt(document.getElementById('stock').value)
             };
-            socket.emit('addProduct', newProduct);
+            socket.emit('addProduct', newProduct); 
             e.target.reset(); 
         });
     </script>

@@ -1,62 +1,65 @@
-const fs = require('fs');
-const path = require('path'); 
+const Cart = require('../../models/cart');
+const Product = require('../../models/product');
+const { v4: uuidv4 } = require('uuid'); 
 
-const productsFilePath = path.join(__dirname, '..', 'data', 'products.json'); 
-
-function readCarts() {
-    const data = fs.readFileSync(cartsFilePath);
-    return JSON.parse(data);
-}
-
-function writeCarts(carts) {
-    fs.writeFileSync(cartsFilePath, JSON.stringify(carts, null, 2));
-}
-
-function addCart() {
-    const currentCarts = readCarts();
-    const newCartId = (currentCarts.length + 1).toString();
-
-    const newCart = {
-        id: newCartId,
-        products: []
-    };
-
-    currentCarts.push(newCart);
-    writeCarts(currentCarts);
-
+async function addCart() {
+    const newCart = new Cart({ _id: uuidv4(), products: [] }); 
+    await newCart.save();
     return newCart;
 }
 
-function getCartById(cid) {
-    const carts = readCarts();
-    
-    return carts.find(c => c.id === cid);
+async function getCartById(cid) {
+    return await Cart.findById(cid); 
 }
 
-function addProductToCart(cid, pid) {
-    let carts = readCarts();
+async function addProductToCart(cid, pid) {
+    const cart = await getCartById(cid); 
+
+    if (!cart) throw new Error('Carrito no encontrado'); 
+
     
-    let cartIndex = carts.findIndex(c => c.id === cid);
+    const productExists = await Product.exists({ _id: pid }); 
+    if (!productExists) throw new Error('Producto no encontrado');
 
-    if (cartIndex === -1) {
-        throw new Error('Carrito no encontrado.');
-    }
+    const productIndex = cart.products.findIndex(p => p.productId.toString() === pid); 
 
-    let productInCartIndex = carts[cartIndex].products.findIndex(p => p.product === pid);
-
-    if (productInCartIndex !== -1) {
-        carts[cartIndex].products[productInCartIndex].quantity += 1;
+    if (productIndex > -1) {
+        cart.products[productIndex].quantity += 1; 
     } else {
-        carts[cartIndex].products.push({ product: pid, quantity: 1 });
+        cart.products.push({ productId: pid, quantity: 1 }); 
     }
 
-    writeCarts(carts);
-
-    return carts[cartIndex];
+    await cart.save(); 
+    return cart; 
 }
 
-module.exports = {
-    addCart,
-    getCartById,
-    addProductToCart,
-};
+async function removeProductFromCart(cid, pid) {
+    const cart = await getCartById(cid); 
+
+    if (!cart) throw new Error('Carrito no encontrado'); 
+
+    const initialLength = cart.products.length; // Longitud inicial para verificar si se eliminó un producto
+    cart.products = cart.products.filter(p => p.productId.toString() !== pid); 
+
+    await cart.save(); 
+
+    if (cart.products.length === initialLength) { // Verifica si se eliminó algo
+        throw new Error('No se pudo eliminar el producto.');
+    }
+
+    return cart; 
+}
+
+
+async function emptyCart(cid) {
+    const cart = await getCartById(cid);
+
+    if (!cart) throw new Error('Carrito no encontrado');
+
+    cart.products = []; 
+    await cart.save(); 
+
+    return cart;
+}
+
+module.exports = { addCart, getCartById, addProductToCart, removeProductFromCart, emptyCart };

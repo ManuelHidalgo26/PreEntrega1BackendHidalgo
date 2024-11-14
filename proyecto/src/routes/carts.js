@@ -1,37 +1,36 @@
 const express = require('express');
 const router = express.Router();
-const { 
-    addCart,
-    getCartById,
-    addProductToCart 
-} = require('../managers/cartManager');
+const { addProductToCart, removeProductFromCart } = require('../managers/cartManager');
 
-router.post('/', (req, res) => {
-    const newCart = addCart();
-    return res.status(201).json(newCart);
-});
+router.post('/:cid/product/:pid', async (req, res) => {
+    const cid = req.params.cid; 
+    const pid = req.params.pid; 
 
-router.get('/:cid', (req, res) => {
-    const cid = req.params.cid;
+    try {
+        const updatedCart = await addProductToCart(cid, pid); 
+        const product = updatedCart.products.find(p => p.productId.toString() === pid); 
 
-    const cart = getCartById(cid);
+        if (!product) {
+            return res.status(404).send('Producto no encontrado en el carrito.');
+        }
 
-    if (cart) {
-        res.json(cart.products);
-    } else {
-        res.status(404).send('Carrito no encontrado.');
+        res.status(200).json({ success: true, product }); 
+    } catch (error) {
+        console.error("Error al agregar producto:", error);
+        res.status(500).json({ success: false, message: error.message }); 
     }
 });
 
-router.post('/:cid/product/:pid', (req, res) => {
-    const cid = req.params.cid;
-    const pid = req.params.pid;
+router.delete('/:cid/product/:pid', async (req, res) => {
+    const cid = req.params.cid; 
+    const pid = req.params.pid; 
 
     try {
-        const updatedCart = addProductToCart(cid, pid);
-        res.status(200).json(updatedCart);
+        const updatedCart = await removeProductFromCart(cid, pid); 
+        res.status(200).json({ success: true, cart: updatedCart }); 
     } catch (error) {
-        res.status(404).send(error.message);
+        console.error("Error al eliminar producto:", error);
+        res.status(500).json({ success: false, message: error.message }); 
     }
 });
 
